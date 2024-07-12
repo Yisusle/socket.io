@@ -14,7 +14,7 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'", "'unsafe-inline'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
-      connectSrc: ["'self'", "https://<tu-proyecto>.vercel.app"],
+      connectSrc: ["'self'", "https://socket-io-sepia.vercel.app"],
       imgSrc: ["'self'", "data:"],
       fontSrc: ["'self'", "https://fonts.googleapis.com", "https://fonts.gstatic.com"]
     }
