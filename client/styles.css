@@ -1,0 +1,80 @@
+#border{
+    border: 1px solid #eee;
+}
+/* Estilos para el contenedor de mensajes */
+#messages {
+    width: 100%;
+    max-width: 600px;
+    height: 60vh;
+    overflow-y: auto; /* Permitir el desplazamiento vertical si es necesario */
+    padding: 10px; /* Espaciado interior para los mensajes */
+    margin: 0 auto; /* Centrar horizontalmente */
+    background-color: #f9f9f9; /* Color de fondo */
+    border-radius: 10px; /* Bordes redondeados */
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1); /* Sombra */  
+    border: 1px solid #eee;  
+}
+
+/* Estilos para cada mensaje */
+.message {
+    margin-bottom: 10px; /* Espacio entre mensajes */
+    padding: 10px; /* Espaciado interior */
+    background-color: #fff; /* Color de fondo */
+    border-radius: 8px; /* Bordes redondeados */
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); /* Sombra */
+}
+
+/* Estilos para el nombre del remitente */
+.message strong {
+    color: #333; /* Color del texto del remitente */
+    font-weight: bold; /* Texto en negrita */
+}
+
+/* Estilos para el texto del mensaje */
+.message p {
+    color: #666; /* Color del texto del mensaje */
+}
+
+/* Estilos para el formulario de entrada */
+form {
+    width: 100%; /* Ancho igual al del contenedor de mensajes */
+    max-width: 600px; /* Mismo ancho máximo */
+    margin: 20px auto; /* Espacio superior e inferior y centrado horizontal */
+    display: flex; /* Usar un diseño flexible */
+    justify-content: center; /* Centrar horizontalmente */
+    border: 1px solid #eee; /* Borde */
+    padding: 10px; /* Espaciado interior */
+    border-radius: 10px; /* Bordes redondeados */
+}
+
+/* Estilos para el campo de nombre */
+input#nickname {
+    width: 150px; /* Ancho del campo */
+    margin-right: 10px; /* Espacio derecho */
+}
+
+/* Estilos para el campo de mensaje */
+textarea#text {
+    flex: 1; /* Expansión flexible para llenar el espacio disponible */
+    max-width: 300px; /* Ancho máximo */
+    height: 50px; /* Altura inicial */
+    resize: none; /* Evitar el redimensionamiento del área de texto */
+}
+
+/* Estilos para el botón de enviar */
+input[type="submit"] {
+    margin-left: 10px;
+    padding: 10px 20px; /* Espaciado interior */
+    background-color: #007bff; /* Color de fondo */
+    color: #fff; /* Color del texto */
+    border: none; /* Sin borde */
+    border-radius: 5px; /* Bordes redondeados */
+    cursor: pointer; /* Cambiar el cursor al pasar el ratón */
+}
+
+/* Estilos para el botón de enviar al pasar el ratón */
+input[type="submit"]:hover {
+    background-color: #0056b3; /* Color de fondo al pasar el ratón */
+}
+
+
