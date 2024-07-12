@@ -6,6 +6,8 @@ var io = require("socket.io")(server);
 
 app.use(cors());
 
+app.use('/chat', express.static("client"));
+
 app.use(express.static("client"));
 
 app.get("/hola-mundo", function(req, res){

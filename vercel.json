@@ -8,8 +8,15 @@
   ],
   "routes": [
     {
+      "src": "/",
+      "headers": { "Location": "/chat" },
+      "status": 301,
+      "dest": "/chat"
+    },
+    {
       "src": "/(.*)",
       "dest": "/server/index.js"
     }
   ]
 }
+
