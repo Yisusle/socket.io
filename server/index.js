@@ -1,25 +1,10 @@
 var express = require("express");
 var app = express();
 var cors = require('cors');
-var helmet = require('helmet');
 var server = require("http").Server(app);
 var io = require("socket.io")(server);
 
 app.use(cors());
-
-// Configura helmet para permitir scripts inline
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      connectSrc: ["'self'", "https://socket-io-sepia.vercel.app"],
-      imgSrc: ["'self'", "data:"],
-      fontSrc: ["'self'", "https://fonts.googleapis.com", "https://fonts.gstatic.com"]
-    }
-  }
-}));
 
 app.use('/chat', express.static("client"));
 
