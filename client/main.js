@@ -163,8 +163,7 @@
       reactionPickerTarget = messageId;
       var picker = document.createElement('div');
       picker.id = 'reaction-picker';
-      picker.innerHTML = QUICK_EMOJIS.map(function(e) {
-          return '<button data-emoji="' + e + '" onclick="addReaction(' + messageId + ', this);
+      picker.innerHTML = QUICK_EMOJIS.map(function(e) { return '<button data-emoji="' + e + '" onclick="addReaction(' + messageId + ', this);
   closeReactionPicker();">' + e + '</button>';
       }).join('');
       var rect = btn.getBoundingClientRect();
