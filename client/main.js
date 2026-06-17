@@ -149,12 +149,11 @@ document.getElementById("secret-password").addEventListener("keydown", function(
 });
 
 function submitSecretPassword() {
-    var pass = document.getElementById("secret-password").value;
-    if (!pass) return;
-    secretPassword = pass;
-    var hash = CryptoJS.SHA256(pass).toString();
-    socket.emit("join-secret", hash);
-}
+      var pass = document.getElementById("secret-password").value;
+      if (!pass) return;
+      secretPassword = pass;
+      socket.emit("join-secret", pass);
+  }
 
 socket.on("secret-joined", function(data) {
     closeSecretModal();
