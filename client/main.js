@@ -148,9 +148,9 @@
 
   // === Reacciones público ===
 
-  function addReaction(messageId, btnOrEmoji) {
+  function addReaction(messageId, idxOrBtn) {
       if (!socketNickname) { alert('Pon un nickname primero.'); return; }
-      var emoji = typeof btnOrEmoji === 'string' ? btnOrEmoji : btnOrEmoji.getAttribute('data-emoji');
+      var emoji = typeof idxOrBtn === 'number' ? QUICK_EMOJIS[idxOrBtn] : idxOrBtn.getAttribute('data-emoji');
       socket.emit("add-reaction", { messageId: messageId, emoji: emoji, nickname: socketNickname });
   }
 
@@ -163,9 +163,7 @@
       reactionPickerTarget = messageId;
       var picker = document.createElement('div');
       picker.id = 'reaction-picker';
-      picker.innerHTML = QUICK_EMOJIS.map(function(e) { return '<button data-emoji="' + e + '" onclick="addReaction(' + messageId + ', this);
-  closeReactionPicker();">' + e + '</button>';
-      }).join('');
+      picker.innerHTML = QUICK_EMOJIS.map(function(e, i) { return '<button onclick="addReaction(' + messageId + ',' + i + ');closeReactionPicker();">' + e + '</button>'; }).join('');
       var rect = btn.getBoundingClientRect();
       picker.style.top = (rect.top - 55 + window.scrollY) + 'px';
       picker.style.left = rect.left + 'px';
@@ -244,9 +242,7 @@
           var users = r[emoji] || [];
           if (users.length === 0) return '';
           var isMe = nick && users.indexOf(nick) !== -1;
-          return '<button class="reaction' + (isMe ? ' reaction-mine' : '') + '" onclick="addSecretReaction(' +
-  messageId + ',this)" data-emoji="' + escapeHtml(emoji) + '" title="' + escapeHtml(users.join(', ')) + '">' + emoji + '
-  ' + users.length + '</button>';
+          return '<button class="reaction' + (isMe ? ' reaction-mine' : '') + '" onclick="addSecretReaction(' + messageId + ',this)" data-emoji="' + escapeHtml(emoji) + '" title="' + escapeHtml(users.join(', ')) + '">' + emoji + ' ' + users.length + '</button>';
       }).join('');
   }
 
@@ -285,10 +281,10 @@
 
   // === Reacciones secretas ===
 
-  function addSecretReaction(messageId, btnOrEmoji) {
+  function addSecretReaction(messageId, idxOrBtn) {
       var nick = document.getElementById("secret-nickname").value;
       if (!nick) { alert('Pon un nickname primero.'); return; }
-      var emoji = typeof btnOrEmoji === 'string' ? btnOrEmoji : btnOrEmoji.getAttribute('data-emoji');
+      var emoji = typeof idxOrBtn === 'number' ? QUICK_EMOJIS[idxOrBtn] : idxOrBtn.getAttribute('data-emoji');
       socket.emit("add-secret-reaction", { messageId: messageId, emoji: emoji, nickname: nick });
   }
 
@@ -301,10 +297,7 @@
       secretReactionPickerTarget = messageId;
       var picker = document.createElement('div');
       picker.id = 'reaction-picker';
-      picker.innerHTML = QUICK_EMOJIS.map(function(e) {
-          return '<button data-emoji="' + e + '" onclick="addSecretReaction(' + messageId + ', this);
-  closeReactionPicker();">' + e + '</button>';
-      }).join('');
+      picker.innerHTML = QUICK_EMOJIS.map(function(e, i) { return '<button onclick="addSecretReaction(' + messageId + ',' + i + ');closeReactionPicker();">' + e + '</button>'; }).join('');
       var rect = btn.getBoundingClientRect();
       picker.style.top = (rect.top - 55 + window.scrollY) + 'px';
       picker.style.left = rect.left + 'px';
