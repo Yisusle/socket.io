@@ -214,8 +214,7 @@
           var users = r[emoji] || [];
           if (users.length === 0) return '';
           var isMe = nick && users.indexOf(nick) !== -1;
-          return '<button class="reaction' + (isMe ? ' reaction-mine' : '') + '" onclick="addSecretReaction(' + messageId + ',this)" data-emoji="' + escapeHtml(emoji) + '" title="' + escapeHtml(users.join(',
-  ')) + '">' + emoji + ' ' + users.length + '</button>';
+          return '<button class="reaction' + (isMe ? ' reaction-mine' : '') + '" onclick="addSecretReaction(' + messageId + ',this)" data-emoji="' + escapeHtml(emoji) + '" title="' + escapeHtml(users.join(',')) + '">' + emoji + ' ' + users.length + '</button>';
       }).join('');
   }
 
