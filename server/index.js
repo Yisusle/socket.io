@@ -18,7 +18,8 @@
       var apiKey = process.env.GIPHY_API_KEY || '';
       if (!apiKey) return res.json({ data: [] });
       var url = q
-          ? 'https://api.giphy.com/v1/gifs/search?api_key=' + apiKey + '&q=' + encodeURIComponent(q) + '&limit=12&rating=g'
+          ? 'https://api.giphy.com/v1/gifs/search?api_key=' + apiKey + '&q=' + encodeURIComponent(q) +
+  '&limit=12&rating=g'
           : 'https://api.giphy.com/v1/gifs/trending?api_key=' + apiKey + '&limit=12&rating=g';
       fetch(url)
           .then(function(r) { return r.json(); })
@@ -39,6 +40,7 @@
 
   var secretMessages = [];
   var secretReactions = {};
+  var secretUsers = {};
   var connectedUsers = {};
   var reactions = {};
   var typingUsers = {};
@@ -46,6 +48,11 @@
   function broadcastUsers() {
       var users = Object.keys(connectedUsers).map(function(nick){ return { nickname: nick }; });
       io.sockets.emit('users', users);
+  }
+
+  function broadcastSecretUsers() {
+      var users = Object.values(secretUsers).map(function(nick){ return { nickname: nick }; });
+      io.to("secret-room").emit("secret-users", users);
   }
 
   setInterval(function() {
@@ -72,6 +79,18 @@
           return callback && callback({ ok: true });
       });
 
+      socket.on("set-secret-nickname", function(nickname) {
+          if (!nickname) return;
+          secretUsers[socket.id] = nickname;
+          broadcastSecretUsers();
+      });
+
+      socket.on("leave-secret", function() {
+          delete secretUsers[socket.id];
+          socket.leave("secret-room");
+          broadcastSecretUsers();
+      });
+
       socket.on("add-message", function(data){
           var nickname = data && data.nickname ? data.nickname : socket.nickname;
           if (!nickname) { socket.emit('error-message', 'Debes establecer un nickname.'); return; }
@@ -84,7 +103,8 @@
           }
           var text = data.text || '';
           if (!text) return;
-          var msg = { id: Date.now(), text: text, nickname: nickname, ts: Date.now(), type: data.type || 'text', replyTo: data.replyTo || null };
+          var msg = { id: Date.now(), text: text, nickname: nickname, ts: Date.now(), type: data.type || 'text',
+  replyTo: data.replyTo || null };
           messages.push(msg);
           if (messages.length > 500) messages.shift();
           io.sockets.emit("messages", messages);
@@ -109,7 +129,8 @@
           var idx = users.indexOf(data.nickname);
           if (idx === -1) users.push(data.nickname);
           else { users.splice(idx, 1); if (users.length === 0) delete secretReactions[data.messageId][data.emoji]; }
-          io.to("secret-room").emit("secret-reaction-update", { messageId: data.messageId, reactions: secretReactions[data.messageId] || {} });
+          io.to("secret-room").emit("secret-reaction-update", { messageId: data.messageId, reactions:
+  secretReactions[data.messageId] || {} });
       });
 
       socket.on("typing", function(nickname){
@@ -129,13 +150,15 @@
               socket.join("secret-room");
               socket.emit("secret-joined", secretMessages);
               socket.emit("secret-reactions", secretReactions);
+              socket.emit("secret-users", Object.values(secretUsers).map(function(nick){ return { nickname: nick }; }));
           } else {
               socket.emit("secret-denied");
           }
       });
 
       socket.on("add-secret-message", function(data){
-          var msg = { id: Date.now(), nickname: data.nickname, text: data.text, type: data.type || 'text', replyTo: data.replyTo || null };
+          var msg = { id: Date.now(), nickname: data.nickname, text: data.text, type: data.type || 'text', replyTo:
+  data.replyTo || null };
           secretMessages.push(msg);
           if (secretMessages.length > 200) secretMessages.shift();
           io.to("secret-room").emit("secret-messages", secretMessages);
@@ -145,6 +168,10 @@
           if (socket.nickname && connectedUsers[socket.nickname]) {
               delete connectedUsers[socket.nickname];
               broadcastUsers();
+          }
+          if (secretUsers[socket.id]) {
+              delete secretUsers[socket.id];
+              broadcastSecretUsers();
           }
           delete typingUsers[socket.id];
           socket.broadcast.emit("typing-update", Object.values(typingUsers));
