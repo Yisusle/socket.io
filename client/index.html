@@ -11,9 +11,7 @@
     <h1>Chat con Sockect.io y NodeJS</h1>
 
     <div id="users" aria-live="polite"></div>
-
     <div id="messages"></div>
-
     <div id="typing-indicator"></div>
 
     <div id="reply-preview">
@@ -26,9 +24,7 @@
         <button class="panel-tab active" onclick="switchTab('emojis')">😊 Emojis</button>
         <button class="panel-tab" onclick="switchTab('gifs')">GIF</button>
       </div>
-      <div id="tab-emojis">
-        <emoji-picker></emoji-picker>
-      </div>
+      <div id="tab-emojis"><emoji-picker></emoji-picker></div>
       <div id="tab-gifs">
         <input type="text" id="gif-search" placeholder="Buscar GIF..." oninput="searchGifs(this.value)" />
         <div id="gif-results"></div>
@@ -38,7 +34,7 @@
     <form onsubmit="addMessage(); return false;">
       <input type="text" id="nickname" placeholder="Nickname" />
       <div id="form-row">
-        <button type="button" id="media-btn" onclick="togglePanel()">😊</button>
+        <button type="button" id="media-btn" onclick="togglePanel(false)">😊</button>
         <textarea id="text" placeholder="Mensaje..."></textarea>
         <input type="submit" value="Enviar" />
       </div>
@@ -62,10 +58,17 @@
         <button onclick="leaveSecretChat()">✕ Salir</button>
       </div>
       <div id="secret-messages"></div>
+      <div id="secret-reply-preview">
+        <span id="secret-reply-text"></span>
+        <button onclick="cancelSecretReply()">✕</button>
+      </div>
       <form onsubmit="addSecretMessage(); return false;">
         <input type="text" id="secret-nickname" placeholder="Nickname" />
-        <textarea id="secret-text" placeholder="Mensaje..."></textarea>
-        <input type="submit" value="Enviar" />
+        <div id="secret-form-row">
+          <button type="button" id="secret-media-btn" onclick="togglePanel(true)">😊</button>
+          <textarea id="secret-text" placeholder="Mensaje..."></textarea>
+          <input type="submit" value="Enviar" />
+        </div>
       </form>
     </div>
 
