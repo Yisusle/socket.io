@@ -97,14 +97,15 @@ io.on("connection", function(socket){
         io.sockets.emit("messages", messages);
     });
 
-    socket.on("join-secret", function(passwordHash){
-        if (passwordHash === SECRET_HASH) {
-            socket.join("secret-room");
-            socket.emit("secret-joined", secretMessages);
-        } else {
-            socket.emit("secret-denied");
-        }
-    });
+    socket.on("join-secret", function(password){
+      var hash = crypto.createHash('sha256').update(password).digest('hex');
+      if (hash === SECRET_HASH) {
+          socket.join("secret-room");
+          socket.emit("secret-joined", secretMessages);
+      } else {
+          socket.emit("secret-denied");
+      }
+  });
 
     socket.on("add-secret-message", function(data){
         secretMessages.push(data);
