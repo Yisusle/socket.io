@@ -59,6 +59,9 @@
   });
 
   socket.on("users", function(users) { renderUsers(users); });
+
+  socket.on("secret-users", function(users) { renderSecretUsers(users); });
+
   socket.on('nickname-taken', function(nick) { alert('El nickname "' + nick + '" ya está en uso. Elige otro.'); });
   socket.on('error-message', function(msg) { alert(msg); });
 
@@ -78,12 +81,15 @@
       });
       div.innerHTML = blocks.map(function(block) {
           var color = getColorForNickname(block.nickname);
-          var header = '<div class="author" style="color:' + color + ';">' + escapeHtml(block.nickname || 'Sin nombre') + '</div>';
+          var header = '<div class="author" style="color:' + color + ';">' + escapeHtml(block.nickname || 'Sin nombre')
+  + '</div>';
           var texts = block.messages.map(function(m) {
               var replyHtml = '';
               if (m.replyTo) {
-                  var qt = m.replyTo.type === 'gif' ? '[GIF]' : (m.replyTo.text || '').substring(0, 60) + ((m.replyTo.text || '').length > 60 ? '...' : '');
-                  replyHtml = '<div class="reply-quote"><strong>' + escapeHtml(m.replyTo.nickname) + '</strong>: ' + escapeHtml(qt) + '</div>';
+                  var qt = m.replyTo.type === 'gif' ? '[GIF]' : (m.replyTo.text || '').substring(0, 60) +
+  ((m.replyTo.text || '').length > 60 ? '...' : '');
+                  replyHtml = '<div class="reply-quote"><strong>' + escapeHtml(m.replyTo.nickname) + '</strong>: ' +
+  escapeHtml(qt) + '</div>';
               }
               var content = m.type === 'gif'
                   ? '<img class="chat-gif" src="' + escapeHtml(m.text) + '" alt="GIF" loading="lazy" />'
@@ -93,7 +99,8 @@
                   '<div class="reactions">' + renderReactionsHtml(m.id) + '</div>' +
                   '<div class="msg-actions">' +
                       '<button class="action-btn" onclick="setReplyById(' + m.id + ')">↩ Responder</button>' +
-                      '<button class="action-btn react-btn" onclick="toggleReactionPicker(this,' + m.id + ')">+😊</button>' +
+                      '<button class="action-btn react-btn" onclick="toggleReactionPicker(this,' + m.id +
+  ')">+😊</button>' +
                   '</div>' +
               '</div>';
           }).join('');
@@ -108,8 +115,9 @@
           var users = r[emoji] || [];
           if (users.length === 0) return '';
           var isMe = socketNickname && users.indexOf(socketNickname) !== -1;
-          return '<button class="reaction' + (isMe ? ' reaction-mine' : '') + '" onclick="addReaction(' + messageId + ',this)" data-emoji="' + escapeHtml(emoji) + '" title="' + escapeHtml(users.join(', ')) +
-  '">' + emoji + ' ' + users.length + '</button>';
+          return '<button class="reaction' + (isMe ? ' reaction-mine' : '') + '" onclick="addReaction(' + messageId +
+  ',this)" data-emoji="' + escapeHtml(emoji) + '" title="' + escapeHtml(users.join(', ')) + '">' + emoji + ' ' +
+  users.length + '</button>';
       }).join('');
   }
 
@@ -156,7 +164,8 @@
       var picker = document.createElement('div');
       picker.id = 'reaction-picker';
       picker.innerHTML = QUICK_EMOJIS.map(function(e) {
-          return '<button data-emoji="' + e + '" onclick="addReaction(' + messageId + ', this); closeReactionPicker();">' + e + '</button>';
+          return '<button data-emoji="' + e + '" onclick="addReaction(' + messageId + ', this);
+  closeReactionPicker();">' + e + '</button>';
       }).join('');
       var rect = btn.getBoundingClientRect();
       picker.style.top = (rect.top - 55 + window.scrollY) + 'px';
@@ -164,46 +173,68 @@
       document.body.appendChild(picker);
   }
 
-  // === Render secreto ===
+  // === Render secreto (agrupado) ===
 
   function renderSecret(data) {
       secretMessagesById = {};
       (data || []).forEach(function(m) { if (m.id) secretMessagesById[m.id] = m; });
+
       var div = document.getElementById("secret-messages");
       var wasAtBottom = div.scrollTop + div.clientHeight >= div.scrollHeight - 10;
-      div.innerHTML = (data || []).map(function(msg) {
-          var text = msg.text;
-          var type = msg.type || 'text';
-          try {
-              var bytes = CryptoJS.AES.decrypt(msg.text, secretPassword);
-              var dec = bytes.toString(CryptoJS.enc.Utf8);
-              if (dec) text = dec;
-          } catch(e) {}
-          var replyHtml = '';
-          if (msg.replyTo) {
-              var qt = msg.replyTo.type === 'gif' ? '[GIF]' : '';
-              if (!qt) {
-                  try {
-                      var rb = CryptoJS.AES.decrypt(msg.replyTo.encryptedText, secretPassword);
-                      qt = (rb.toString(CryptoJS.enc.Utf8) || '').substring(0, 60);
-                  } catch(e) { qt = '...'; }
-              }
-              replyHtml = '<div class="reply-quote"><strong>' + escapeHtml(msg.replyTo.nickname) + '</strong>: ' + escapeHtml(qt) + '</div>';
+
+      var blocks = [];
+      (data || []).forEach(function(msg) {
+          var last = blocks[blocks.length - 1];
+          if (last && last.nickname === msg.nickname && !msg.replyTo) {
+              last.messages.push(msg);
+          } else {
+              blocks.push({ nickname: msg.nickname, messages: [msg] });
           }
-          var content = type === 'gif'
-              ? '<img class="chat-gif" src="' + escapeHtml(text) + '" alt="GIF" loading="lazy" />'
-              : '<p>' + escapeHtml(text) + '</p>';
-          var color = getColorForNickname(msg.nickname);
-          return '<div class="secret-msg-item" data-id="' + msg.id + '">' +
-              '<strong style="color:' + color + ';">' + escapeHtml(msg.nickname || '') + '</strong>' +
-              replyHtml + content +
-              '<div class="reactions">' + renderSecretReactionsHtml(msg.id) + '</div>' +
-              '<div class="msg-actions">' +
-                  '<button class="action-btn" onclick="setSecretReplyById(' + msg.id + ')">↩ Responder</button>' +
-                  '<button class="action-btn react-btn" onclick="toggleSecretReactionPicker(this,' + msg.id + ')">+😊</button>' +
-              '</div>' +
-          '</div>';
+      });
+
+      div.innerHTML = blocks.map(function(block) {
+          var color = getColorForNickname(block.nickname);
+          var header = '<div class="secret-author" style="color:' + color + ';">' + escapeHtml(block.nickname || '') +
+  '</div>';
+          var texts = block.messages.map(function(msg) {
+              var text = msg.text;
+              var type = msg.type || 'text';
+              try {
+                  var bytes = CryptoJS.AES.decrypt(msg.text, secretPassword);
+                  var dec = bytes.toString(CryptoJS.enc.Utf8);
+                  if (dec) text = dec;
+              } catch(e) {}
+
+              var replyHtml = '';
+              if (msg.replyTo) {
+                  var qt = msg.replyTo.type === 'gif' ? '[GIF]' : '';
+                  if (!qt) {
+                      try {
+                          var rb = CryptoJS.AES.decrypt(msg.replyTo.encryptedText, secretPassword);
+                          qt = (rb.toString(CryptoJS.enc.Utf8) || '').substring(0, 60);
+                      } catch(e) { qt = '...'; }
+                  }
+                  replyHtml = '<div class="reply-quote"><strong>' + escapeHtml(msg.replyTo.nickname) + '</strong>: ' +
+  escapeHtml(qt) + '</div>';
+              }
+
+              var content = type === 'gif'
+                  ? '<img class="chat-gif" src="' + escapeHtml(text) + '" alt="GIF" loading="lazy" />'
+                  : '<p>' + escapeHtml(text) + '</p>';
+
+              return '<div class="secret-msg-item" data-id="' + msg.id + '">' +
+                  replyHtml + content +
+                  '<div class="reactions">' + renderSecretReactionsHtml(msg.id) + '</div>' +
+                  '<div class="msg-actions">' +
+                      '<button class="action-btn" onclick="setSecretReplyById(' + msg.id + ')">↩ Responder</button>' +
+                      '<button class="action-btn react-btn" onclick="toggleSecretReactionPicker(this,' + msg.id +
+  ')">+😊</button>' +
+                  '</div>' +
+              '</div>';
+          }).join('');
+          return '<div class="secret-message"><div class="secret-bubble">' + header + texts + '</div></div>';
       }).join('');
+
       if (wasAtBottom) div.scrollTop = div.scrollHeight;
   }
 
@@ -214,7 +245,19 @@
           var users = r[emoji] || [];
           if (users.length === 0) return '';
           var isMe = nick && users.indexOf(nick) !== -1;
-          return '<button class="reaction' + (isMe ? ' reaction-mine' : '') + '" onclick="addSecretReaction(' + messageId + ',this)" data-emoji="' + escapeHtml(emoji) + '" title="' + escapeHtml(users.join(',')) + '">' + emoji + ' ' + users.length + '</button>';
+          return '<button class="reaction' + (isMe ? ' reaction-mine' : '') + '" onclick="addSecretReaction(' +
+  messageId + ',this)" data-emoji="' + escapeHtml(emoji) + '" title="' + escapeHtml(users.join(', ')) + '">' + emoji + '
+  ' + users.length + '</button>';
+      }).join('');
+  }
+
+  function renderSecretUsers(users) {
+      var container = document.getElementById('secret-users');
+      if (!container) return;
+      container.innerHTML = (users || []).map(function(u) {
+          var color = getColorForNickname(u.nickname);
+          return '<div class="user-item"><span class="user-color" style="background:' + color + ';"></span>' +
+  escapeHtml(u.nickname) + '</div>';
       }).join('');
   }
 
@@ -260,7 +303,8 @@
       var picker = document.createElement('div');
       picker.id = 'reaction-picker';
       picker.innerHTML = QUICK_EMOJIS.map(function(e) {
-          return '<button data-emoji="' + e + '" onclick="addSecretReaction(' + messageId + ', this); closeReactionPicker();">' + e + '</button>';
+          return '<button data-emoji="' + e + '" onclick="addSecretReaction(' + messageId + ', this);
+  closeReactionPicker();">' + e + '</button>';
       }).join('');
       var rect = btn.getBoundingClientRect();
       picker.style.top = (rect.top - 55 + window.scrollY) + 'px';
@@ -288,7 +332,8 @@
       document.getElementById('tab-emojis').style.display = tab === 'emojis' ? 'block' : 'none';
       document.getElementById('tab-gifs').style.display = tab === 'gifs' ? 'block' : 'none';
       document.querySelectorAll('.panel-tab').forEach(function(b) {
-          b.classList.toggle('active', (tab === 'emojis' && b.textContent.includes('Emoji')) || (tab === 'gifs' && b.textContent.includes('GIF')));
+          b.classList.toggle('active', (tab === 'emojis' && b.textContent.includes('Emoji')) || (tab === 'gifs' &&
+  b.textContent.includes('GIF')));
       });
       if (tab === 'gifs') searchGifs('');
   }
@@ -352,12 +397,15 @@
   function sendSecretGif(url) {
       var nicknameEl = document.getElementById("secret-nickname");
       if (!secretNicknameSet) {
-          if (!nicknameEl.value || !nicknameEl.value.trim()) { alert('Ingresa un nickname para el chat secreto.'); return; }
+          if (!nicknameEl.value || !nicknameEl.value.trim()) { alert('Ingresa un nickname para el chat secreto.');
+  return; }
           nicknameEl.style.display = "none";
           secretNicknameSet = true;
+          socket.emit("set-secret-nickname", nicknameEl.value);
       }
       var encrypted = CryptoJS.AES.encrypt(url, secretPassword).toString();
-      socket.emit("add-secret-message", { nickname: nicknameEl.value, text: encrypted, type: 'gif', replyTo: secretReplyingTo });
+      socket.emit("add-secret-message", { nickname: nicknameEl.value, text: encrypted, type: 'gif', replyTo:
+  secretReplyingTo });
       cancelSecretReply();
       togglePanel(false);
   }
@@ -412,6 +460,7 @@
           if (!nicknameEl.value || !nicknameEl.value.trim()) { alert('Por favor ingresa un nickname.'); return; }
           nicknameEl.style.display = "none";
           secretNicknameSet = true;
+          socket.emit("set-secret-nickname", nicknameEl.value);
       }
       var encrypted = CryptoJS.AES.encrypt(text, secretPassword).toString();
       socket.emit("add-secret-message", { nickname: nicknameEl.value, text: encrypted, replyTo: secretReplyingTo });
@@ -426,7 +475,8 @@
   // === Click outside ===
 
   document.addEventListener('click', function(e) {
-      if (!e.target.closest('#media-panel') && !e.target.closest('#media-btn') && !e.target.closest('#secret-media-btn') && panelOpen) {
+      if (!e.target.closest('#media-panel') && !e.target.closest('#media-btn') && !e.target.closest('#secret-media-btn')
+  && panelOpen) {
           panelOpen = false;
           document.getElementById("media-panel").style.display = 'none';
       }
@@ -442,7 +492,8 @@
       var hash = 0;
       for (var i = 0; i < nick.length; i++) { hash = nick.charCodeAt(i) + ((hash << 5) - hash); hash = hash & hash; }
       var c = '#';
-      for (var j = 0; j < 3; j++) { var value = (hash >> (j * 8)) & 0xFF; c += ('00' + (value & 0xFF).toString(16)).substr(-2); }
+      for (var j = 0; j < 3; j++) { var value = (hash >> (j * 8)) & 0xFF; c += ('00' + (value &
+  0xFF).toString(16)).substr(-2); }
       return c;
   }
 
@@ -451,7 +502,8 @@
       if (!container) return;
       container.innerHTML = (users || []).map(function(u) {
           var color = getColorForNickname(u.nickname);
-          return '<div class="user-item"><span class="user-color" style="background:' + color + ';"></span>' + escapeHtml(u.nickname) + '</div>';
+          return '<div class="user-item"><span class="user-color" style="background:' + color + ';"></span>' +
+  escapeHtml(u.nickname) + '</div>';
       }).join('');
   }
 
@@ -516,6 +568,7 @@
   socket.on("secret-messages", function(data) { renderSecret(data); });
 
   function leaveSecretChat() {
+      socket.emit("leave-secret");
       document.getElementById("secret-chat").style.display = "none";
       document.querySelector("h1").style.display = "";
       document.getElementById("messages").style.display = "";
