@@ -150,8 +150,8 @@
       var picker = document.createElement('div');
       picker.id = 'reaction-picker';
       picker.innerHTML = QUICK_EMOJIS.map(function(e) {
-          return '<button data-emoji="' + e + '" onclick="addReaction(' + messageId + ', this);
-  closeReactionPicker();">' + e + '</button>';
+    return '<button data-emoji="' + e + '" onclick="addReaction(' + messageId + ', this); closeReactionPicker();">' + e + '</button>';
+      closeReactionPicker();">' + e + '</button>';
       }).join('');
       var rect = btn.getBoundingClientRect();
       picker.style.top = (rect.top - 55 + window.scrollY) + 'px';
