@@ -1,4 +1,4 @@
-  var socket = io.connect({'forceNew': true});
+ var socket = io.connect({'forceNew': true});
   var secretPassword = null;
   var secretNicknameSet = false;
 
@@ -23,7 +23,13 @@
       document.getElementById("text").value = "";
   }
 
-  // Escuchar la secuencia "secret" fuera de inputs
+  document.getElementById("text").addEventListener("keydown", function(e) {
+      if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          addMessage();
+      }
+  });
+
   var keySequence = "";
   var keyTimer = null;
 
@@ -35,6 +41,7 @@
       keyTimer = setTimeout(function() { keySequence = ""; }, 2000);
       if (keySequence.endsWith("secret")) {
           keySequence = "";
+          e.preventDefault();
           openSecretModal();
       }
   });
@@ -107,6 +114,13 @@
       socket.emit("add-secret-message", { nickname: nicknameEl.value, text: encrypted });
       textEl.value = "";
   }
+
+  document.getElementById("secret-text").addEventListener("keydown", function(e) {
+      if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          addSecretMessage();
+      }
+  });
 
   function leaveSecretChat() {
       document.getElementById("secret-chat").style.display = "none";
