@@ -32,6 +32,6 @@ io.on("connection", function(socket){
 });
 
 //6677
-server.listen(3700, function(){
+server.listen(process.env.PORT || 3700, function(){
     console.log("Servidor Funcionando.");
 });
