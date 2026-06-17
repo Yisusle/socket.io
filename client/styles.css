@@ -147,7 +147,13 @@
       color: #eee;
       font-size: 1rem;
   }
-
+  #secret-chat input[type="text"] {
+      background: #111;
+      color: #eee;
+      border: 1px solid #333;
+      border-radius: 6px;
+      padding: 6px 10px;
+  }
   #secret-header button {
       background: #b91c1c;
       border: none;
