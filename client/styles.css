@@ -16,3 +16,62 @@
 #users { max-width: 600px; margin: 10px auto; display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-start; }
 .user-item { display:flex; align-items:center; gap:8px; font-size:0.9rem; color:#333; padding:4px 6px; border-radius:6px; background:rgba(0,0,0,0.03); }
 .user-color { width:12px; height:12px; border-radius:50%; display:inline-block; }
+/* Typing indicator */
+  #typing-indicator { max-width: 600px; margin: 2px auto; font-size: 0.8rem; color: #999; font-style: italic;
+  min-height: 18px; }
+
+  /* Reply preview */
+  #reply-preview { display: none; max-width: 600px; margin: 4px auto; background: #f5f5f5; border-left: 3px solid #aaa;
+  padding: 6px 10px; align-items: center; justify-content: space-between; font-size: 0.85rem; border-radius: 4px; gap:
+  8px; }
+  #reply-preview button { background: none; border: none; cursor: pointer; font-size: 1rem; color: #888; }
+
+  /* Reply quote inside message */
+  .reply-quote { background: rgba(0,0,0,0.05); border-left: 3px solid #ccc; padding: 4px 8px; margin-bottom: 6px;
+  font-size: 0.82rem; border-radius: 3px; color: #777; }
+
+  /* Message item and actions */
+  .msg-item { position: relative; }
+  .msg-actions { display: none; gap: 4px; margin-top: 4px; }
+  .msg-item:hover .msg-actions { display: flex; }
+  .action-btn { background: none; border: 1px solid #e0e0e0; border-radius: 10px; padding: 2px 8px; font-size: 0.78rem;
+  cursor: pointer; color: #777; }
+  .action-btn:hover { background: #f0f0f0; }
+
+  /* Reactions */
+  .reactions { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; min-height: 4px; }
+  .reaction { background: rgba(0,0,0,0.04); border: 1px solid #e0e0e0; border-radius: 12px; padding: 2px 8px; font-size:
+  0.85rem; cursor: pointer; }
+  .reaction:hover { background: rgba(0,0,0,0.08); }
+  .reaction-mine { background: rgba(100,150,255,0.12); border-color: rgba(100,150,255,0.4); }
+
+  /* Reaction picker */
+  #reaction-picker { position: absolute; background: white; border: 1px solid #ddd; border-radius: 20px; padding: 6px
+  10px; display: flex; gap: 4px; box-shadow: 0 2px 12px rgba(0,0,0,0.12); z-index: 1000; }
+  #reaction-picker button { background: none; border: none; font-size: 1.4rem; cursor: pointer; padding: 2px;
+  transition: transform .1s; }
+  #reaction-picker button:hover { transform: scale(1.25); }
+
+  /* Media panel */
+  #media-panel { display: none; position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); width: min(380px,
+  92vw); background: white; border: 1px solid #ddd; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  z-index: 100; overflow: hidden; }
+  #panel-tabs { display: flex; border-bottom: 1px solid #eee; }
+  .panel-tab { flex: 1; padding: 10px; background: none; border: none; border-bottom: 2px solid transparent; cursor:
+  pointer; font-size: 0.9rem; color: #888; }
+  .panel-tab.active { color: #333; font-weight: 700; border-bottom-color: #333; }
+  #tab-emojis emoji-picker { width: 100%; --num-columns: 8; }
+  #tab-gifs { display: none; padding: 10px; }
+  #gif-search { width: 100%; padding: 6px 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 8px;
+  box-sizing: border-box; }
+  #gif-results { display: flex; flex-wrap: wrap; gap: 3px; max-height: 180px; overflow-y: auto; }
+  .gif-thumb { width: calc(33.3% - 3px); cursor: pointer; border-radius: 4px; object-fit: cover; }
+  .gif-thumb:hover { opacity: 0.8; }
+
+  /* Chat GIF */
+  .chat-gif { max-width: 200px; max-height: 150px; border-radius: 8px; display: block; margin-top: 4px; }
+
+  /* Form row */
+  #form-row { display: flex; align-items: flex-end; gap: 6px; }
+  #media-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; padding: 4px; line-height: 1; }
+  #form-row textarea { flex: 1; }
