@@ -13,13 +13,13 @@
       res.status(200).send("Hola mundo desde una ruta");
   });
 
-  // Proxy GIFs para no exponer la API key en el cliente
   app.get("/api/gifs", function(req, res) {
       var q = req.query.q || '';
       var apiKey = process.env.GIPHY_API_KEY || '';
       if (!apiKey) return res.json({ data: [] });
-      var url = 'https://api.giphy.com/v1/gifs/search?api_key=' + apiKey + '&q=' + encodeURIComponent(q) +
-  '&limit=12&rating=g';
+      var url = q
+          ? 'https://api.giphy.com/v1/gifs/search?api_key=' + apiKey + '&q=' + encodeURIComponent(q) + '&limit=12&rating=g'
+          : 'https://api.giphy.com/v1/gifs/trending?api_key=' + apiKey + '&limit=12&rating=g';
       fetch(url)
           .then(function(r) { return r.json(); })
           .then(function(data) { res.json(data); })
@@ -38,20 +38,21 @@
       .digest('hex');
 
   var secretMessages = [];
+  var secretReactions = {};
   var connectedUsers = {};
   var reactions = {};
   var typingUsers = {};
 
   function broadcastUsers() {
-      var users = Object.keys(connectedUsers).map(function(nick){
-          return { nickname: nick };
-      });
+      var users = Object.keys(connectedUsers).map(function(nick){ return { nickname: nick }; });
       io.sockets.emit('users', users);
   }
 
   setInterval(function() {
       secretMessages = [];
+      secretReactions = {};
       io.to("secret-room").emit("secret-messages", []);
+      io.to("secret-room").emit("secret-reactions", {});
   }, 60 * 60 * 1000);
 
   io.on("connection", function(socket){
@@ -62,12 +63,9 @@
 
       socket.on('set-nickname', function(nickname, callback){
           if (!nickname) return callback && callback({ ok: false, error: 'Nickname vacío' });
-          if (connectedUsers[nickname] && connectedUsers[nickname] !== socket.id) {
+          if (connectedUsers[nickname] && connectedUsers[nickname] !== socket.id)
               return callback && callback({ ok: false, error: 'Ya existe ese nickname' });
-          }
-          if (socket.nickname && connectedUsers[socket.nickname]) {
-              delete connectedUsers[socket.nickname];
-          }
+          if (socket.nickname && connectedUsers[socket.nickname]) delete connectedUsers[socket.nickname];
           socket.nickname = nickname;
           connectedUsers[nickname] = socket.id;
           broadcastUsers();
@@ -76,28 +74,17 @@
 
       socket.on("add-message", function(data){
           var nickname = data && data.nickname ? data.nickname : socket.nickname;
-          if (!nickname) {
-              socket.emit('error-message', 'Debes establecer un nickname antes de enviar mensajes.');
-              return;
-          }
+          if (!nickname) { socket.emit('error-message', 'Debes establecer un nickname.'); return; }
           if (!connectedUsers[nickname]) {
               connectedUsers[nickname] = socket.id;
               socket.nickname = nickname;
               broadcastUsers();
           } else if (connectedUsers[nickname] !== socket.id) {
-              socket.emit('nickname-taken', nickname);
-              return;
+              socket.emit('nickname-taken', nickname); return;
           }
           var text = data.text || '';
           if (!text) return;
-          var msg = {
-              id: Date.now(),
-              text: text,
-              nickname: nickname,
-              ts: Date.now(),
-              type: data.type || 'text',
-              replyTo: data.replyTo || null
-          };
+          var msg = { id: Date.now(), text: text, nickname: nickname, ts: Date.now(), type: data.type || 'text', replyTo: data.replyTo || null };
           messages.push(msg);
           if (messages.length > 500) messages.shift();
           io.sockets.emit("messages", messages);
@@ -109,13 +96,20 @@
           if (!reactions[data.messageId][data.emoji]) reactions[data.messageId][data.emoji] = [];
           var users = reactions[data.messageId][data.emoji];
           var idx = users.indexOf(data.nickname);
-          if (idx === -1) {
-              users.push(data.nickname);
-          } else {
-              users.splice(idx, 1);
-              if (users.length === 0) delete reactions[data.messageId][data.emoji];
-          }
+          if (idx === -1) users.push(data.nickname);
+          else { users.splice(idx, 1); if (users.length === 0) delete reactions[data.messageId][data.emoji]; }
           io.sockets.emit("reaction-update", { messageId: data.messageId, reactions: reactions[data.messageId] || {} });
+      });
+
+      socket.on("add-secret-reaction", function(data){
+          if (!data || !data.messageId || !data.emoji || !data.nickname) return;
+          if (!secretReactions[data.messageId]) secretReactions[data.messageId] = {};
+          if (!secretReactions[data.messageId][data.emoji]) secretReactions[data.messageId][data.emoji] = [];
+          var users = secretReactions[data.messageId][data.emoji];
+          var idx = users.indexOf(data.nickname);
+          if (idx === -1) users.push(data.nickname);
+          else { users.splice(idx, 1); if (users.length === 0) delete secretReactions[data.messageId][data.emoji]; }
+          io.to("secret-room").emit("secret-reaction-update", { messageId: data.messageId, reactions: secretReactions[data.messageId] || {} });
       });
 
       socket.on("typing", function(nickname){
@@ -134,13 +128,16 @@
           if (hash === SECRET_HASH) {
               socket.join("secret-room");
               socket.emit("secret-joined", secretMessages);
+              socket.emit("secret-reactions", secretReactions);
           } else {
               socket.emit("secret-denied");
           }
       });
 
       socket.on("add-secret-message", function(data){
-          secretMessages.push(data);
+          var msg = { id: Date.now(), nickname: data.nickname, text: data.text, type: data.type || 'text', replyTo: data.replyTo || null };
+          secretMessages.push(msg);
+          if (secretMessages.length > 200) secretMessages.shift();
           io.to("secret-room").emit("secret-messages", secretMessages);
       });
 
@@ -155,6 +152,4 @@
       });
   });
 
-  server.listen(process.env.PORT || 3700, function(){
-      console.log("Servidor Funcionando.");
-  });
+  server.listen(process.env.PORT || 3700, function(){ console.log("Servidor Funcionando."); });
