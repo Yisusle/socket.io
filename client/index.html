@@ -1,52 +1,54 @@
-  <!DOCTYPE html>
-  <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Chat Sockect.io</title>
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chat Sockect.io</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
 
-    <h1>Chat con Sockect.io y NodeJS</h1>
+  <h1>Chat con Sockect.io y NodeJS</h1>
 
-    <div id="messages"></div>
+  <div id="users" aria-live="polite"></div>
 
-    <form onsubmit="addMessage(); return false;">
-      <input type="text" id="nickname" placeholder="Nickname" />
-      <textarea id="text" placeholder="Mensaje..."></textarea>
+  <div id="messages"></div>
+
+  <form onsubmit="addMessage(); return false;">
+    <input type="text" id="nickname" placeholder="Nickname" />
+    <textarea id="text" placeholder="Mensaje..."></textarea>
+    <input type="submit" value="Enviar" />
+  </form>
+
+  <!-- Secret modal -->
+  <div id="secret-overlay">
+    <div id="secret-modal">
+      <h2>🔒</h2>
+      <input type="password" id="secret-password" placeholder="Contraseña" />
+      <p id="secret-error"></p>
+      <div class="secret-modal-actions">
+        <button onclick="submitSecretPassword()">Entrar</button>
+        <button onclick="closeSecretModal()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Secret chat -->
+  <div id="secret-chat">
+    <div id="secret-header">
+      <span>🔐 Chat Secreto</span>
+      <button onclick="leaveSecretChat()">✕ Salir</button>
+    </div>
+    <div id="secret-messages"></div>
+    <form onsubmit="addSecretMessage(); return false;">
+      <input type="text" id="secret-nickname" placeholder="Nickname" />
+      <textarea id="secret-text" placeholder="Mensaje..."></textarea>
       <input type="submit" value="Enviar" />
     </form>
+  </div>
 
-    <!-- Secret modal -->
-    <div id="secret-overlay">
-      <div id="secret-modal">
-        <h2>🔒</h2>
-        <input type="password" id="secret-password" placeholder="Contraseña" />
-        <p id="secret-error"></p>
-        <div class="secret-modal-actions">
-          <button onclick="submitSecretPassword()">Entrar</button>
-          <button onclick="closeSecretModal()">Cancelar</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Secret chat -->
-    <div id="secret-chat">
-      <div id="secret-header">
-        <span>🔐 Chat Secreto</span>
-        <button onclick="leaveSecretChat()">✕ Salir</button>
-      </div>
-      <div id="secret-messages"></div>
-      <form onsubmit="addSecretMessage(); return false;">
-        <input type="text" id="secret-nickname" placeholder="Nickname" />
-        <textarea id="secret-text" placeholder="Mensaje..."></textarea>
-        <input type="submit" value="Enviar" />
-      </form>
-    </div>
-
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    <script src="main.js"></script>
-  </body>
-  </html>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
